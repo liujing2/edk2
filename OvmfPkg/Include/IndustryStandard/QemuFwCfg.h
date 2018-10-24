@@ -80,6 +80,8 @@ typedef enum {
   QemuFwCfgItemKernelSetupSize      = 0x0017,
   QemuFwCfgItemKernelSetupData      = 0x0018,
   QemuFwCfgItemFileDir              = 0x0019,
+  QemuFwCfgItemPciExBarBase         = 0x001a,
+  QemuFwCfgItemPciSegment           = 0x001b,
 
   QemuFwCfgItemX86AcpiTables        = 0x8000,
   QemuFwCfgItemX86SmbiosTables      = 0x8001,

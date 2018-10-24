@@ -505,6 +505,8 @@
   #
   # On Q35 machine types that QEMU intends to support in the long term, QEMU
   # never lets the RAM below 4 GB exceed 2 GB.
+  # On virt machine type that Nemu intends to support in the long term, NEMU
+  # passes this via fw_cfg
   gEfiMdePkgTokenSpaceGuid.PcdPciExpressBaseAddress|0x80000000
 
 !ifdef $(SOURCE_DEBUG_ENABLE)

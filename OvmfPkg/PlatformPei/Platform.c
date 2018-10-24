@@ -183,13 +183,14 @@ MemMapInitialization (
   if (!mXen) {
     UINT32  TopOfLowRam;
     UINT64  PciExBarBase;
+    UINT16  PciSegment;
     UINT32  PciBase;
     UINT32  PciSize;
 
     TopOfLowRam = GetSystemMemorySizeBelow4gb ();
     PciExBarBase = 0;
-    if (mHostBridgeDevId == INTEL_Q35_MCH_DEVICE_ID ||
-        mHostBridgeDevId == VIRT_QEMU_DEVICE_ID) {
+    PciSegment = 0;
+    if (mHostBridgeDevId == INTEL_Q35_MCH_DEVICE_ID) {
       //
       // The MMCONFIG area is expected to fall between the top of low RAM and
       // the base of the 32-bit PCI host aperture.
@@ -198,6 +199,16 @@ MemMapInitialization (
       ASSERT (TopOfLowRam <= PciExBarBase);
       ASSERT (PciExBarBase <= MAX_UINT32 - SIZE_256MB);
       PciBase = (UINT32)(PciExBarBase + SIZE_256MB);
+    } else if (mHostBridgeDevId == VIRT_QEMU_DEVICE_ID) {
+      QemuFwCfgSelectItem (QemuFwCfgItemPciExBarBase);
+      PciExBarBase = QemuFwCfgRead64 ();
+      QemuFwCfgSelectItem (QemuFwCfgItemPciSegment);
+      PciSegment = QemuFwCfgRead16();
+
+      ASSERT (TopOfLowRam <= PciExBarBase);
+      ASSERT (PciExBarBase <= MAX_UINT32 - SIZE_256MB);
+      PciBase = PciExBarBase + SIZE_256MB * PciSegment;
+      ASSERT (PciBase <= MAX_UINT32 - SIZE_256MB);
     } else {
       PciBase = (TopOfLowRam < BASE_2GB) ? BASE_2GB : TopOfLowRam;
     }
@@ -253,9 +264,9 @@ MemMapInitialization (
     }
 
     if (mHostBridgeDevId == VIRT_QEMU_DEVICE_ID) {
-      AddReservedMemoryBaseSizeHob (PciExBarBase, SIZE_256MB, FALSE);
-      BuildMemoryAllocationHob (PciExBarBase, SIZE_256MB,
-        EfiReservedMemoryType);
+      AddReservedMemoryBaseSizeHob (PciExBarBase, SIZE_256MB * PciSegment, FALSE);
+      BuildMemoryAllocationHob (PciExBarBase, SIZE_256MB * PciSegment,
+                                EfiReservedMemoryType); 
     }
     
     AddIoMemoryBaseSizeHob (PcdGet32(PcdCpuLocalApicBaseAddress), SIZE_1MB);
