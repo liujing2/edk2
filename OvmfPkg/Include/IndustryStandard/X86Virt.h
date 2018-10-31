@@ -17,7 +17,7 @@
 //
 // Device ID for emulated PCI host bridge used on virt platform
 //
-#define VIRT_QEMU_DEVICE_ID 0x8
+#define VIRT_QEMU_DEVICE_ID 0x0D57
 
 //
 // SLP_TYP and SLP_EN values for HW-reduced ACPI used on virt platform
