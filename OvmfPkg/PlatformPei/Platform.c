@@ -183,13 +183,14 @@ MemMapInitialization (
   if (!mXen) {
     UINT32  TopOfLowRam;
     UINT64  PciExBarBase;
+    UINT64  PciExBarSize;
     UINT32  PciBase;
     UINT32  PciSize;
 
     TopOfLowRam = GetSystemMemorySizeBelow4gb ();
     PciExBarBase = 0;
-    if (mHostBridgeDevId == INTEL_Q35_MCH_DEVICE_ID ||
-        mHostBridgeDevId == VIRT_QEMU_DEVICE_ID) {
+    PciExBarSize = 0;
+    if (mHostBridgeDevId == INTEL_Q35_MCH_DEVICE_ID) { 
       //
       // The MMCONFIG area is expected to fall between the top of low RAM and
       // the base of the 32-bit PCI host aperture.
@@ -198,6 +199,29 @@ MemMapInitialization (
       ASSERT (TopOfLowRam <= PciExBarBase);
       ASSERT (PciExBarBase <= MAX_UINT32 - SIZE_256MB);
       PciBase = (UINT32)(PciExBarBase + SIZE_256MB);
+    } else if (mHostBridgeDevId == VIRT_QEMU_DEVICE_ID) {
+      FIRMWARE_CONFIG_ITEM  FwCfgItemPciExBar;
+      UINTN                 FwCfgSizePciExBar;
+      FIRMWARE_CONFIG_ITEM  FwCfgItemSegment;
+      UINTN                 FwCfgSizeSegment;
+      UINT64                PciInfo[2];
+      UINT16                Segment;
+
+      QemuFwCfgFindFile ("etc/pci-host/base", &FwCfgItemPciExBar, &FwCfgSizePciExBar);
+      QemuFwCfgSelectItem (FwCfgItemPciExBar);
+      QemuFwCfgReadBytes (sizeof(PciInfo), &PciInfo);
+      PciExBarBase = PciInfo[0];
+      PciBase = PciInfo[1];
+      ASSERT (TopOfLowRam <= PciExBarBase);
+      ASSERT (PciExBarBase <= MAX_UINT32 - SIZE_256MB);
+      ASSERT (PciBase <= MAX_UINT32 - SIZE_256MB);
+
+      QemuFwCfgFindFile ("etc/pci-host/total-segment", &FwCfgItemSegment, &FwCfgSizeSegment);
+      QemuFwCfgSelectItem (FwCfgItemSegment);
+      QemuFwCfgReadBytes (sizeof(Segment), &Segment);
+      ASSERT (Segment <= MAX_UINT16);
+
+      PciExBarSize = Segment * SIZE_1MB;
     } else {
       PciBase = (TopOfLowRam < BASE_2GB) ? BASE_2GB : TopOfLowRam;
     }
@@ -253,8 +277,8 @@ MemMapInitialization (
     }
 
     if (mHostBridgeDevId == VIRT_QEMU_DEVICE_ID) {
-      AddReservedMemoryBaseSizeHob (PciExBarBase, SIZE_256MB, FALSE);
-      BuildMemoryAllocationHob (PciExBarBase, SIZE_256MB,
+      AddReservedMemoryBaseSizeHob (PciExBarBase, PciExBarSize, FALSE);
+      BuildMemoryAllocationHob (PciExBarBase, PciExBarSize,
         EfiReservedMemoryType);
     }
     
