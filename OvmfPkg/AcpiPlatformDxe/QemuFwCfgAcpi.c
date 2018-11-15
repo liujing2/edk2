@@ -346,6 +346,8 @@ ProcessCmdAllocate (
   }
 
   Status = QemuFwCfgFindFile ((CHAR8 *)Allocate->File, &FwCfgItem, &FwCfgSize);
+  DEBUG ((DEBUG_INFO, "liujing: %a: QemuFwCfgFindFile(\"%a\"): %r\n", __FUNCTION__,
+      Allocate->File, Status));
   if (EFI_ERROR (Status)) {
     DEBUG ((EFI_D_ERROR, "%a: QemuFwCfgFindFile(\"%a\"): %r\n", __FUNCTION__,
       Allocate->File, Status));
@@ -982,6 +984,7 @@ InstallQemuFwCfgTables (
   ORDERED_COLLECTION_ENTRY *SeenPointerEntry, *SeenPointerEntry2;
 
   Status = QemuFwCfgFindFile ("etc/table-loader", &FwCfgItem, &FwCfgSize);
+DEBUG((DEBUG_INFO,"liujing: ~~~~~~~~~~~~~~~~~~~~~~~\n"));
   if (EFI_ERROR (Status)) {
     return Status;
   }
@@ -1037,9 +1040,11 @@ InstallQemuFwCfgTables (
   // pass, no such command has been encountered yet.
   //
   WritePointerSubsetEnd = LoaderStart;
+DEBUG((DEBUG_INFO,"liujing: 1~~~~~~~~~~~~~~~~~~~~~~~\n"));
   for (LoaderEntry = LoaderStart; LoaderEntry < LoaderEnd; ++LoaderEntry) {
     switch (LoaderEntry->Type) {
     case QemuLoaderCmdAllocate:
+DEBUG((DEBUG_INFO,"liujing: case 1~~~~~~~~~~~~~~~~~~~~~~~\n"));
       Status = ProcessCmdAllocate (
                  &LoaderEntry->Command.Allocate,
                  Tracker,
@@ -1048,16 +1053,19 @@ InstallQemuFwCfgTables (
       break;
 
     case QemuLoaderCmdAddPointer:
+DEBUG((DEBUG_INFO,"liujing: case 2~~~~~~~~~~~~~~~~~~~~~~~\n"));
       Status = ProcessCmdAddPointer (&LoaderEntry->Command.AddPointer,
                  Tracker);
       break;
 
     case QemuLoaderCmdAddChecksum:
+DEBUG((DEBUG_INFO,"liujing: case 3~~~~~~~~~~~~~~~~~~~~~~~\n"));
       Status = ProcessCmdAddChecksum (&LoaderEntry->Command.AddChecksum,
                  Tracker);
       break;
 
     case QemuLoaderCmdWritePointer:
+DEBUG((DEBUG_INFO,"liujing: case 4~~~~~~~~~~~~~~~~~~~~~~~\n"));
         Status = ProcessCmdWritePointer (&LoaderEntry->Command.WritePointer,
                    Tracker, S3Context);
         if (!EFI_ERROR (Status)) {
@@ -1066,6 +1074,7 @@ InstallQemuFwCfgTables (
         break;
 
     default:
+DEBUG((DEBUG_INFO,"liujing: case 5~~~~~~~~~~~~~~~~~~~~~~~\n"));
       DEBUG ((EFI_D_VERBOSE, "%a: unknown loader command: 0x%x\n",
         __FUNCTION__, LoaderEntry->Type));
       break;
@@ -1076,6 +1085,7 @@ InstallQemuFwCfgTables (
     }
   }
 
+DEBUG((DEBUG_INFO,"liujing: 2~~~~~~~~~~~~~~~~~~~~~~~\n"));
   InstalledKey = AllocatePool (INSTALLED_TABLES_MAX * sizeof *InstalledKey);
   if (InstalledKey == NULL) {
     Status = EFI_OUT_OF_RESOURCES;
@@ -1088,6 +1098,7 @@ InstallQemuFwCfgTables (
     goto FreeKeys;
   }
 
+DEBUG((DEBUG_INFO,"liujing: 3~~~~~~~~~~~~~~~~~~~~~~~\n"));
   //
   // second pass: identify and install ACPI tables
   //
@@ -1107,6 +1118,7 @@ InstallQemuFwCfgTables (
       }
     }
   }
+DEBUG((DEBUG_INFO,"liujing: 4~~~~~~~~~~~~~~~~~~~~~~~\n"));
 
   //
   // Translating the condensed QEMU_LOADER_WRITE_POINTER commands to ACPI S3

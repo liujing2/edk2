@@ -637,6 +637,20 @@ PeiCheckAndSwitchStack (
   IN PEI_CORE_INSTANCE                  *Private
   )
 {
+DEBUG((DEBUG_INFO, "liujing: PeiCheckAndSwitchStack!\n"));
+EFI_PEI_HOB_POINTERS  Hob1;
+
+Hob1.Raw = Private->HobList.Raw;
+      for (Hob1.Raw = Private->HobList.Raw; !END_OF_HOB_LIST(Hob1); Hob1.Raw = GET_NEXT_HOB(Hob1)) {
+        if (GET_HOB_TYPE (Hob1) == EFI_HOB_TYPE_MEMORY_ALLOCATION) {
+    
+          DEBUG ((DEBUG_INFO, "liujing: Memory Allocation 0x%08x 0x%0lx - 0x%0lx\n", \
+            Hob1.MemoryAllocation->AllocDescriptor.MemoryType,               \
+            Hob1.MemoryAllocation->AllocDescriptor.MemoryBaseAddress,        \
+            Hob1.MemoryAllocation->AllocDescriptor.MemoryBaseAddress + Hob1.MemoryAllocation->AllocDescriptor.MemoryLength - 1));
+        }
+   }
+DEBUG((DEBUG_INFO, "liujing: PeiCheckAndSwitchStack-printend!\n"));
   VOID                                  *LoadFixPeiCodeBegin;
   EFI_STATUS                            Status;
   CONST EFI_PEI_SERVICES                **PeiServices;
@@ -946,6 +960,7 @@ PeiDispatcher (
   IN PEI_CORE_INSTANCE           *Private
   )
 {
+DEBUG((DEBUG_INFO, "liujing: PeiDispatcher!\n"));
   EFI_STATUS                          Status;
   UINT32                              Index1;
   UINT32                              Index2;
@@ -1069,9 +1084,12 @@ PeiDispatcher (
         PeimFileHandle = Private->CurrentFileHandle = Private->CurrentFvFileHandles[PeimCount];
 
         if (Private->Fv[FvCount].PeimState[PeimCount] == PEIM_STATE_NOT_DISPATCHED) {
+DEBUG((DEBUG_INFO, "liujing: if(FVCount) \n"));
           if (!DepexSatisfied (Private, PeimFileHandle, PeimCount)) {
+DEBUG((DEBUG_INFO, "liujing: if(Depex) \n"));
             Private->PeimNeedingDispatch = TRUE;
           } else {
+DEBUG((DEBUG_INFO, "liujing: else \n"));
             Status = CoreFvHandle->FvPpi->GetFileInfo (CoreFvHandle->FvPpi, PeimFileHandle, &FvFileInfo);
             ASSERT_EFI_ERROR (Status);
             if (FvFileInfo.FileType == EFI_FV_FILETYPE_FIRMWARE_VOLUME_IMAGE) {
@@ -1149,6 +1167,7 @@ PeiDispatcher (
 
               }
             }
+DEBUG((DEBUG_INFO, "liujing: PeimCount1 = %d\n", PeimCount ));
 
             PeiCheckAndSwitchStack (SecCoreData, Private);
 
@@ -1158,6 +1177,7 @@ PeiDispatcher (
             //
             ProcessNotifyList (Private);
 
+DEBUG((DEBUG_INFO, "liujing: PeimCount2 = %d\n", PeimCount ));
             //
             // Recheck SwitchStackSignal after ProcessNotifyList()
             // in case PeiInstallPeiMemory() is done in a callback with
@@ -1204,7 +1224,10 @@ PeiDispatcher (
             }
           }
         }
+DEBUG((DEBUG_INFO, "liujing: PeiDispatcher for each!\n"));
       }
+DEBUG((DEBUG_INFO, "liujing: PeiDispatcher for end!\n"));
+
 
       //
       // We set to NULL here to optimize the 2nd entry to this routine after

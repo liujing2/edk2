@@ -275,6 +275,7 @@ QemuFwCfgFindFile (
   QemuFwCfgSelectItem (QemuFwCfgItemFileDir);
   Count = SwapBytes32 (QemuFwCfgRead32 ());
 
+DEBUG((DEBUG_INFO, "liujing: QemuFwCfgFindFile Count = %d \n", Count));
   for (Idx = 0; Idx < Count; ++Idx) {
     UINT32 FileSize;
     UINT16 FileSelect;
@@ -288,6 +289,8 @@ QemuFwCfgFindFile (
     InternalQemuFwCfgReadBytes (sizeof (FName), FName);
 
     if (AsciiStrCmp (Name, FName) == 0) {
+DEBUG((DEBUG_INFO, "liujing: QemuFwCfgFindFile FName = %s \n", FName));
+DEBUG((DEBUG_INFO, "liujing: QemuFwCfgFindFile Idx = %d, FileSize = %x, FileSelect = %x, FileReserved = %x \n", Idx, FileSize, FileSelect, FileReserved));
       *Item = SwapBytes16 (FileSelect);
       *Size = SwapBytes32 (FileSize);
       return RETURN_SUCCESS;

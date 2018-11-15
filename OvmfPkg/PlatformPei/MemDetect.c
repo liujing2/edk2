@@ -225,9 +225,11 @@ GetSystemMemorySizeBelow4gb (
     return 0;
   }
 
+DEBUG((DEBUG_INFO, "liujing: FwCfgItem = %x, FwCfgSize = %d \n", FwCfgItem, FwCfgSize));
   QemuFwCfgSelectItem (FwCfgItem);
   for (Processed = 0; Processed < FwCfgSize; Processed += sizeof E820Entry) {
     QemuFwCfgReadBytes (sizeof E820Entry, &E820Entry);
+DEBUG((DEBUG_INFO, "liujing: GetSystemMemorySizeBelow4gb E820Entry.BaseAddr=%x, E820Entry.Type=%d\n", E820Entry.BaseAddr, E820Entry.Type));
     // Assumes just one RAM entry.
     if (E820Entry.Type == EfiAcpiAddressRangeMemory &&
         E820Entry.BaseAddr < BASE_4GB) {
@@ -541,6 +543,8 @@ PublishPeiMemory (
   UINT32                      LowerMemorySize;
   UINT32                      PeiMemoryCap;
 
+
+DEBUG((DEBUG_INFO, "liujing: PublishPeiMemory \n"));
   LowerMemorySize = GetSystemMemorySizeBelow4gb ();
   if (FeaturePcdGet (PcdSmmSmramRequire)) {
     //
@@ -549,6 +553,7 @@ PublishPeiMemory (
     LowerMemorySize -= mQ35TsegMbytes * SIZE_1MB;
   }
 
+DEBUG((DEBUG_INFO, "liujing: PublishPeiMemory LowerMemorySize=%x\n", LowerMemorySize));
   //
   // If S3 is supported, then the S3 permanent PEI memory is placed next,
   // downwards. Its size is primarily dictated by CpuMpPei. The formula below
@@ -584,15 +589,18 @@ PublishPeiMemory (
       PcdGet32 (PcdOvmfDecompressionScratchEnd) :
       PcdGet32 (PcdOvmfDxeMemFvBase) + PcdGet32 (PcdOvmfDxeMemFvSize);
     MemorySize = LowerMemorySize - MemoryBase;
+DEBUG((DEBUG_INFO, "liujing: first MemoryBase=%x, LowerMemorySize=%x !!!\n", MemoryBase, LowerMemorySize));
     if (MemorySize > PeiMemoryCap) {
       MemoryBase = LowerMemorySize - PeiMemoryCap;
       MemorySize = PeiMemoryCap;
     }
   }
 
+DEBUG((DEBUG_INFO, "liujing: after MemoryBase=%x, LowerMemorySize=%x !!!\n", MemoryBase, LowerMemorySize));
   //
   // Publish this memory to the PEI Core
   //
+
   Status = PublishSystemMemory(MemoryBase, MemorySize);
   ASSERT_EFI_ERROR (Status);
 

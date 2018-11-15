@@ -144,6 +144,7 @@ PeiCore (
   IN VOID                              *Data
   )
 {
+DEBUG((DEBUG_INFO, "liujing: PeiCore!\n"));
   PEI_CORE_INSTANCE           PrivateData;
   EFI_SEC_PEI_HAND_OFF        *SecCoreData;
   EFI_SEC_PEI_HAND_OFF        NewSecCoreData;
@@ -316,7 +317,19 @@ PeiCore (
   // Initialize libraries that the PEI Core is linked against
   //
   ProcessLibraryConstructorList (NULL, (CONST EFI_PEI_SERVICES **)&PrivateData.Ps);
+/*
+EFI_PEI_HOB_POINTERS  Hob1;
 
+      for (Hob1.Raw = PrivateData.HobList.Raw; !END_OF_HOB_LIST(Hob1); Hob1.Raw = GET_NEXT_HOB(Hob1)) {
+        if (GET_HOB_TYPE (Hob1) == EFI_HOB_TYPE_MEMORY_ALLOCATION) {
+    
+          DEBUG ((DEBUG_INFO, "liujing: 1111111 0x%08x 0x%0lx - 0x%0lx\n", \
+            Hob1.MemoryAllocation->AllocDescriptor.MemoryType,               \
+            Hob1.MemoryAllocation->AllocDescriptor.MemoryBaseAddress,        \
+            Hob1.MemoryAllocation->AllocDescriptor.MemoryBaseAddress + Hob1.MemoryAllocation->AllocDescriptor.MemoryLength - 1));
+        }
+   }
+*/
   //
   // Initialize PEI Core Services
   //
@@ -421,6 +434,20 @@ PeiCore (
     PERF_INMODULE_END ("DisMem");
   }
 
+
+EFI_PEI_HOB_POINTERS  Hob1;
+      for (Hob1.Raw = PrivateData.HobList.Raw; !END_OF_HOB_LIST(Hob1); Hob1.Raw = GET_NEXT_HOB(Hob1)) {
+DEBUG((DEBUG_INFO, "liujing: Print! \n"));
+        if (GET_HOB_TYPE (Hob1) == EFI_HOB_TYPE_MEMORY_ALLOCATION) {
+    
+          DEBUG ((DEBUG_INFO, "liujing: Before call PeiDispatcher 0x%08x 0x%0lx - 0x%0lx\n", \
+            Hob1.MemoryAllocation->AllocDescriptor.MemoryType,               \
+            Hob1.MemoryAllocation->AllocDescriptor.MemoryBaseAddress,        \
+            Hob1.MemoryAllocation->AllocDescriptor.MemoryBaseAddress + Hob1.MemoryAllocation->AllocDescriptor.MemoryLength - 1));
+        }
+   }
+
+DEBUG((DEBUG_INFO, "liujing: Call PeiDispatcher!\n"));
   //
   // Call PEIM dispatcher
   //
